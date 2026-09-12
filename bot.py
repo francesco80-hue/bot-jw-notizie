@@ -25,24 +25,30 @@ logging.basicConfig(
 in_attesa_audio = set()
 audio_in_revisione = {}
 
-# Mini-guida ufficiale formattata per Telegram
+# Mini-guida ufficiale in testo semplice (senza Markdown rischioso)
 TESTO_ISTRUZIONI = (
-    "📖 **ISTRUZIONI PER LA REGISTRAZIONE**\n\n"
-    "1️⃣ **Come impostare la lettura:**\n"
+    "📖 ISTRUZIONI PER LA REGISTRAZIONE\n\n"
+    "1️⃣ Come impostare la lettura:\n"
     "• Fai una buona lettura senza rumori di sottofondo.\n"
-    "• ⚠️ **Importante:** Non occorre leggere ciò che si trova tra parentesi.\n"
-    "• Inizia il vocale dicendo: _'BUONGIORNO!! QUESTA È LA SCRITTURA DEL"
-    " GIORNO DI [es. giovedì 1° settembre]...'_ e prosegui con _'IL COMMENTO"
-    " DICE: ...'_ \n"
-    "• Concludi dicendo: _'FINE DEL COMMENTO, BUONA GIORNATA'_.\n\n"
-    "2️⃣ **Alternanza delle voci:**\n"
-    "• Invia un **massimo di 2 registrazioni** per volta, così da variare le"
-    " voci nel canale.\n\n"
-    "3️⃣ **Gestione tramite il Bot:**\n"
+    "• ⚠️ Importante: Non occorre leggere ciò che si trova tra parentesi.\n"
+    "• Inizia il vocale dicendo: 'BUONGIORNO!! QUESTA È LA SCRITTURA DEL"
+    " GIORNO DI [es. giovedì 1° settembre]...' e prosegui con 'IL COMMENTO"
+    " DICE: ...'\n"
+    "• Concludi dicendo: 'FINE DEL COMMENTO, BUONA GIORNATA'.\n\n"
+    "2️⃣ Alternanza delle voci:\n"
+    "• Invia un massimo di 2 registrazioni per volta, così da variare le voci"
+    " nel canale.\n\n"
+    "3️⃣ Gestione tramite il Bot:\n"
     "• Il bot ti guiderà indicandoti la data mancante. Potrai riascoltare l'audio"
     " e confermarlo o rifarlo.\n\n"
     "ℹ️ Per qualsiasi dubbio contatta l'amministratore: @richiestehelp_bot"
 )
+
+
+async def mostra_istruzioni(update: Update, context: ContextTypes.DEFAULT_TYPE):
+  await update.message.reply_text(
+      TESTO_ISTRUZIONI, disable_web_page_preview=True
+  )
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
