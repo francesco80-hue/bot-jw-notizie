@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 import logging
+import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -11,7 +12,8 @@ from telegram.ext import (
 )
 
 # --- CONFIGURAZIONE ---
-TOKEN = "8679120903:AAG6cLX19SpqiM1H8YZE_eCcE400PIdFC1w"
+# Legge il token in sicurezza da Render
+TOKEN = os.getenv("TOKEN")
 CANALE_ARCHIVIO_ID = -1004454006617
 
 logging.basicConfig(
