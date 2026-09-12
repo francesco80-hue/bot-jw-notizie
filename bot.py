@@ -24,23 +24,20 @@ in_attesa_audio = set()
 audio_in_revisione = {}
 
 TESTO_ISTRUZIONI = (
-    "📖 ISTRUZIONI PER LA REGISTRAZIONE\n\n"
-    "1️⃣ Come impostare la lettura:\n"
-    "• Fai una buona lettura senza rumori di sottofondo.\n"
-    "• ⚠️ Importante: Non occorre leggere ciò che si trova tra parentesi.\n"
-    "• Inizia il vocale dicendo: 'BUONGIORNO!! QUESTA È LA SCRITTURA DEL"
-    " GIORNO DI [es. giovedì 1° settembre]...' e prosegui con 'IL COMMENTO"
-    " DICE: ...'\n"
-    "• Concludi dicendo: 'FINE DEL COMMENTO, BUONA GIORNATA'.\n\n"
-    "2️⃣ Alternanza delle voci:\n"
-    "• Invia un massimo di 2 registrazioni per volta, così da variare le voci"
-    " nel canale.\n\n"
-    "3️⃣ Gestione tramite il Bot:\n"
-    "• Il bot ti guiderà indicandoti la data mancante. Potrai riascoltare l'audio"
-    " e confermarlo o rifarlo.\n\n"
-    "ℹ️ Per qualsiasi dubbio contatta l'amministratore: @richiestehelp_bot\n\n"
-    "👇 **Pronto per iniziare?**\n"
-    "Digita o clicca qui 👉 /registra"
+    "ISTRUZIONI PER LA REGISTRAZIONE\n\n"
+    "1. Come impostare la lettura:\n"
+    "- Fai una buona lettura senza rumori di sottofondo.\n"
+    "- Importante: Non occorre leggere ciò che si trova tra parentesi.\n"
+    "- Inizia il vocale dicendo: 'BUONGIORNO!! QUESTA È LA SCRITTURA DEL GIORNO"
+    " DI...' e prosegui con 'IL COMMENTO DICE: ...'\n"
+    "- Concludi dicendo: 'FINE DEL COMMENTO, BUONA GIORNATA'.\n\n"
+    "2. Alternanza delle voci:\n"
+    "- Invia un massimo di 2 registrazioni per volta.\n\n"
+    "3. Gestione tramite il Bot:\n"
+    "- Il bot ti guiderà indicandoti la data mancante e ti permetterà di"
+    " confermare o rifare l'audio.\n\n"
+    "Per iniziare subito la registrazione clicca qui: /registra\n\n"
+    "Per qualsiasi dubbio contatta l'amministratore: @richiestehelp_bot"
 )
 
 
