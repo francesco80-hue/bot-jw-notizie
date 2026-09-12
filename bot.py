@@ -38,7 +38,9 @@ TESTO_ISTRUZIONI = (
     "3️⃣ Gestione tramite il Bot:\n"
     "• Il bot ti guiderà indicandoti la data mancante. Potrai riascoltare l'audio"
     " e confermarlo o rifarlo.\n\n"
-    "ℹ️ Per qualsiasi dubbio contatta l'amministratore: @richiestehelp_bot"
+    "ℹ️ Per qualsiasi dubbio contatta l'amministratore: @richiestehelp_bot\n\n"
+    "👇 **Pronto per iniziare?**\n"
+    "Digita o clicca qui 👉 /registra"
 )
 
 
