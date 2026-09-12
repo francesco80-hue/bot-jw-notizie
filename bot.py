@@ -12,7 +12,6 @@ from telegram.ext import (
 )
 
 # --- CONFIGURAZIONE ---
-# Legge il token in sicurezza da Render
 TOKEN = os.getenv("TOKEN")
 CANALE_ARCHIVIO_ID = -1004454006617
 
@@ -21,11 +20,9 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-# Memorie temporanee per gli utenti
 in_attesa_audio = set()
 audio_in_revisione = {}
 
-# Mini-guida ufficiale in testo semplice (senza Markdown rischioso)
 TESTO_ISTRUZIONI = (
     "📖 ISTRUZIONI PER LA REGISTRAZIONE\n\n"
     "1️⃣ Come impostare la lettura:\n"
@@ -45,25 +42,18 @@ TESTO_ISTRUZIONI = (
 )
 
 
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+  await update.message.reply_text(
+      "Benvenuto nel gestore audio di JW Notizie!\n\n"
+      "Usa i comandi seguenti per interagire:\n"
+      "/registra - Per inviare la prossima scrittura audio\n"
+      "/istruzioni - Per leggere la guida alla registrazione"
+  )
+
+
 async def mostra_istruzioni(update: Update, context: ContextTypes.DEFAULT_TYPE):
   await update.message.reply_text(
       TESTO_ISTRUZIONI, disable_web_page_preview=True
-  )
-
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  await update.message.reply_text(
-      "Benvenuto nel gestore audio di JW Notizie! 👋\n\n"
-      "Usa i comandi seguenti per interagire:\n"
-      "▶️ /registra - Per inviare la prossima scrittura audio\n"
-      "📖 /istruzioni - Per leggere la guida alla registrazione",
-      parse_mode="Markdown",
-  )
-
-
-async def mostra_istruzioni(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  await update.message.reply_text(
-      TESTO_ISTRUZIONI, parse_mode="Markdown", disable_web_page_preview=True
   )
 
 
@@ -71,8 +61,6 @@ async def avvia_registrazione(update: Update, context: ContextTypes.DEFAULT_TYPE
   user_id = update.message.from_user.id
   in_attesa_audio.add(user_id)
 
-  # (Nota: nelle prossime evoluzioni collegheremo qui il calcolo automatico dal canale archivio.
-  # Per ora, simuliamo il giorno successivo alla data odierna di sistema).
   prossima_data = date.today() + timedelta(days=1)
   data_str = prossima_data.strftime("%Y-%m-%d")
   data_label = prossima_data.strftime("%d/%m/%Y")
@@ -80,11 +68,9 @@ async def avvia_registrazione(update: Update, context: ContextTypes.DEFAULT_TYPE
   context.user_data["data_assegnata"] = data_str
 
   await update.message.reply_text(
-      f"👋 Ciao! Dalla situazione attuale, la prima scrittura che manca e che"
-      f" dobbiamo registrare è quella di:\n\n📅 **{data_label}**\n\n🎙️ Registra"
-      " e invia qui sotto la nota vocale (o carica il file MP3) seguendo le"
-      " istruzioni (/istruzioni).",
-      parse_mode="Markdown",
+      f"La prima scrittura che manca e che dobbiamo registrare è quella"
+      f" di:\n\n{data_label}\n\nRegistra e invia qui sotto la nota vocale"
+      " seguendo le istruzioni (/istruzioni)."
   )
 
 
@@ -93,8 +79,8 @@ async def ricevi_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
   if user_id not in in_attesa_audio:
     await update.message.reply_text(
-        "⚠️ Prima di inviare l'audio, premi o scrivi il comando /registra per"
-        " avviare la procedura."
+        "Prima di inviare l'audio, scrivi il comando /registra per avviare la"
+        " procedura."
     )
     return
 
@@ -112,20 +98,18 @@ async def ricevi_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
   in_attesa_audio.remove(user_id)
   audio_in_revisione[user_id] = {"file_id": file_id, "data": data_assegnata}
 
-  # Mostra i pulsanti di revisione
   keyboard = [
       [
-          InlineKeyboardButton("✅ Conferma e Salva", callback_data="conferma"),
-          InlineKeyboardButton("🔄 Rifai la registrazione", callback_data="rifai"),
+          InlineKeyboardButton("Conferma e Salva", callback_data="conferma"),
+          InlineKeyboardButton("Rifai la registrazione", callback_data="rifai"),
       ]
   ]
   reply_markup = InlineKeyboardMarkup(keyboard)
 
   await update.message.reply_text(
-      f"🎧 Ho ricevuto la tua registrazione per il giorno"
-      f" **{data_assegnata}**.\n\nAscoltala sopra se vuoi. Cosa desideri fare?",
+      f"Ho ricevuto la tua registrazione per il giorno"
+      f" {data_assegnata}.\n\nAscoltala sopra se vuoi. Cosa desideri fare?",
       reply_markup=reply_markup,
-      parse_mode="Markdown",
   )
 
 
@@ -138,30 +122,28 @@ async def gestisci_pulsanti(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
   if user_id not in audio_in_revisione:
     await query.edit_message_text(
-        "⏱️ Sessione scaduta o già gestita. Ricomincia digitando /registra."
+        "Sessione scaduta o già gestita. Ricomincia digitando /registra."
     )
     return
 
   dati = audio_in_revisione.pop(user_id)
 
   if scelta == "conferma":
-    # Inoltra l'audio nel Canale Archivio Privato con tag identificativo
     await context.bot.send_audio(
         chat_id=CANALE_ARCHIVIO_ID,
         audio=dati["file_id"],
         caption=f"AUDIO_DATA: {dati['data']}",
     )
     await query.edit_message_text(
-        f"✅ Ottimo! L'audio per il giorno **{dati['data']}** è stato salvato"
-        " ufficialmente nell'archivio."
-        "\n\nDigita /registra quando vuoi procedere con un'altra registrazione.",
-        parse_mode="Markdown",
+        f"Ottimo! L'audio per il giorno {dati['data']} è stato salvato"
+        " ufficialmente nell'archivio.\n\nDigita /registra quando vuoi"
+        " procedere con un'altra registrazione."
     )
 
   elif scelta == "rifai":
     await query.edit_message_text(
-        "🔄 Registrazione scartata.\nNessun problema, digita /registra quando"
-        " sei pronto per riprovare."
+        "Registrazione scartata.\nNessun problema, digita /registra quando sei"
+        " pronto per riprovare."
     )
 
 
