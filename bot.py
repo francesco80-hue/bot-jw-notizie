@@ -1,3 +1,4 @@
+
 from datetime import date, datetime, timedelta
 import logging
 import os
@@ -42,159 +43,180 @@ TESTO_ISTRUZIONI = (
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  await update.message.reply_text(
-      "Benvenuto nel gestore audio di JW Notizie!\n\n"
-      "Usa i comandi seguenti per interagire:\n"
-      "/registra - Per inviare la prossima scrittura audio\n"
-      "/istruzioni - Per leggere la guida alla registrazione"
-  )
+    await update.message.reply_text(
+        "Benvenuto nel gestore audio di JW Notizie!\n\n"
+        "Usa i comandi seguenti per interagire:\n"
+        "/registra - Per inviare la prossima scrittura audio\n"
+        "/istruzioni - Per leggere la guida alla registrazione"
+    )
+
+
+# NUOVO COMANDO TEMPORANEO: RECUPERA ID DELLA CHAT
+async def mostra_id_gruppo(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
+    chat = update.effective_chat
+
+    if chat is None:
+        return
+
+    await update.effective_message.reply_text(
+        f"ID di questa chat: {chat.id}\n"
+        f"Tipo: {chat.type}\n"
+        f"Nome: {chat.title or 'Chat privata'}"
+    )
 
 
 async def mostra_istruzioni(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  await update.message.reply_text(
-      TESTO_ISTRUZIONI, disable_web_page_preview=True
-  )
+    await update.message.reply_text(
+        TESTO_ISTRUZIONI, disable_web_page_preview=True
+    )
 
 
 async def calcola_prossima_data(bot):
-  """Legge gli ultimi messaggi del canale archivio per trovare l'ultima data inserita
+    """Legge gli ultimi messaggi del canale archivio per trovare l'ultima data inserita
 
-  e calcola il giorno successivo. Se il canale è vuoto, parte da oggi.
-  """
-  try:
-    # Nota: Telegram non permette di leggere direttamente la cronologia infinita di un canale senza un client MTProto,
-    # ma possiamo ottenere gli ultimi aggiornamenti o impostare una base di partenza intelligente.
-    # Per semplicità e robustezza, se stiamo popolando ora, partiamo da oggi o da una data base,
-    # oppure leggiamo l'ultimo messaggio se inoltrato/notificato.
-    # Visto che hai inviato la prima registrazione per il 13/9, facciamo in modo che se c'è memoria
-    # recente o se partiamo da qui, il bot incrementa correttamente.
-    pass
-  except Exception as e:
-    logging.error(f"Errore calcolo data: {e}")
+    e calcola il giorno successivo. Se il canale è vuoto, parte da oggi.
+    """
+    try:
+        # Nota: Telegram non permette di leggere direttamente la cronologia infinita di un canale senza un client MTProto,
+        # ma possiamo ottenere gli ultimi aggiornamenti o impostare una base di partenza intelligente.
+        # Per semplicità e robustezza, se stiamo popolando ora, partiamo da oggi o da una data base,
+        # oppure leggiamo l'ultimo messaggio se inoltrato/notificato.
+        # Visto che hai inviato la prima registrazione per il 13/9, facciamo in modo che se c'è memoria
+        # recente o se partiamo da qui, il bot incrementa correttamente.
+        pass
+    except Exception as e:
+        logging.error(f"Errore calcolo data: {e}")
 
-  # Logica incrementale basata sulla data odierna o sulla sequenza
-  # Per adesso impostiamo una logica pulita: leggiamo la data corrente del sistema o avanziamo
-  base_data = date(2026, 9, 13)  # Partenza base dei tuoi test
-  return base_data + timedelta(
-      days=1
-  )  # Diventerà 14/9, poi 15/9 automaticamente
+    # Logica incrementale basata sulla data odierna o sulla sequenza
+    # Per adesso impostiamo una logica pulita: leggiamo la data corrente del sistema o avanziamo
+    base_data = date(2026, 9, 13)
+    return base_data + timedelta(days=1)
 
 
 async def avvia_registrazione(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  user_id = update.message.from_user.id
-  in_attesa_audio.add(user_id)
+    user_id = update.message.from_user.id
+    in_attesa_audio.add(user_id)
 
-  # Se abbiamo già salvato una data nella sessione precedente, la incrementiamo di 1 giorno, altrimenti partiamo dal 13/9
-  ultima_data_str = context.user_data.get("ultima_data_registrata")
-  if ultima_data_str:
-    ultima_data = datetime.strptime(ultima_data_str, "%Y-%m-%d").date()
-    prossima_data = ultima_data + timedelta(days=1)
-  else:
-    # Primo avvio o test: partiamo dal 13 settembre (o data odierna)
-    prossima_data = date(2026, 9, 13)
+    # Se abbiamo già salvato una data nella sessione precedente, la incrementiamo di 1 giorno, altrimenti partiamo dal 13/9
+    ultima_data_str = context.user_data.get("ultima_data_registrata")
+    if ultima_data_str:
+        ultima_data = datetime.strptime(ultima_data_str, "%Y-%m-%d").date()
+        prossima_data = ultima_data + timedelta(days=1)
+    else:
+        # Primo avvio o test: partiamo dal 13 settembre
+        prossima_data = date(2026, 9, 13)
 
-  data_str = prossima_data.strftime("%Y-%m-%d")
-  data_label = prossima_data.strftime("%d/%m/%Y")
+    data_str = prossima_data.strftime("%Y-%m-%d")
+    data_label = prossima_data.strftime("%d/%m/%Y")
 
-  # Salviamo temporaneamente la data assegnata per questo utente
-  context.user_data["data_assegnata"] = data_str
+    # Salviamo temporaneamente la data assegnata per questo utente
+    context.user_data["data_assegnata"] = data_str
 
-  await update.message.reply_text(
-      f"La prima scrittura che manca e che dobbiamo registrare è quella"
-      f" di:\n\n{data_label}\n\nRegistra e invia qui sotto la nota vocale"
-      " seguendo le istruzioni (/istruzioni)."
-  )
+    await update.message.reply_text(
+        f"La prima scrittura che manca e che dobbiamo registrare è quella"
+        f" di:\n\n{data_label}\n\nRegistra e invia qui sotto la nota vocale"
+        " seguendo le istruzioni (/istruzioni)."
+    )
 
 
 async def ricevi_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  user_id = update.message.from_user.id
+    user_id = update.message.from_user.id
 
-  if user_id not in in_attesa_audio:
-    await update.message.reply_text(
-        "Prima di inviare l'audio, scrivi il comando /registra per avviare la"
-        " procedura."
+    if user_id not in in_attesa_audio:
+        await update.message.reply_text(
+            "Prima di inviare l'audio, scrivi il comando /registra per avviare la"
+            " procedura."
+        )
+        return
+
+    documento = (
+        update.message.document
+        or update.message.audio
+        or update.message.voice
     )
-    return
+    if not documento:
+        return
 
-  documento = (
-      update.message.document
-      or update.message.audio
-      or update.message.voice
-  )
-  if not documento:
-    return
+    file_id = documento.file_id
+    data_assegnata = context.user_data.get("data_assegnata")
 
-  file_id = documento.file_id
-  data_assegnata = context.user_data.get("data_assegnata")
+    in_attesa_audio.remove(user_id)
+    audio_in_revisione[user_id] = {
+        "file_id": file_id,
+        "data": data_assegnata
+    }
 
-  in_attesa_audio.remove(user_id)
-  audio_in_revisione[user_id] = {"file_id": file_id, "data": data_assegnata}
+    keyboard = [
+        [
+            InlineKeyboardButton("Conferma e Salva", callback_data="conferma"),
+            InlineKeyboardButton("Rifai la registrazione", callback_data="rifai"),
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-  keyboard = [
-      [
-          InlineKeyboardButton("Conferma e Salva", callback_data="conferma"),
-          InlineKeyboardButton("Rifai la registrazione", callback_data="rifai"),
-      ]
-  ]
-  reply_markup = InlineKeyboardMarkup(keyboard)
-
-  await update.message.reply_text(
-      f"Ho ricevuto la tua registrazione per il giorno"
-      f" {data_assegnata}.\n\nAscoltala sopra se vuoi. Cosa desideri fare?",
-      reply_markup=reply_markup,
-  )
+    await update.message.reply_text(
+        f"Ho ricevuto la tua registrazione per il giorno"
+        f" {data_assegnata}.\n\nAscoltala sopra se vuoi. Cosa desideri fare?",
+        reply_markup=reply_markup,
+    )
 
 
 async def gestisci_pulsanti(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  query = update.callback_query
-  await query.answer()
+    query = update.callback_query
+    await query.answer()
 
-  user_id = query.from_user.id
-  scelta = query.data
+    user_id = query.from_user.id
+    scelta = query.data
 
-  if user_id not in audio_in_revisione:
-    await query.edit_message_text(
-        "Sessione scaduta o già gestita. Ricomincia digitando /registra."
-    )
-    return
+    if user_id not in audio_in_revisione:
+        await query.edit_message_text(
+            "Sessione scaduta o già gestita. Ricomincia digitando /registra."
+        )
+        return
 
-  dati = audio_in_revisione.pop(user_id)
+    dati = audio_in_revisione.pop(user_id)
 
-  if scelta == "conferma":
-    await context.bot.send_audio(
-        chat_id=CANALE_ARCHIVIO_ID,
-        audio=dati["file_id"],
-        caption=f"AUDIO_DATA: {dati['data']}",
-    )
+    if scelta == "conferma":
+        await context.bot.send_audio(
+            chat_id=CANALE_ARCHIVIO_ID,
+            audio=dati["file_id"],
+            caption=f"AUDIO_DATA: {dati['data']}",
+        )
 
-    # Memorizziamo l'ultima data confermata per far avanzare automaticamente la prossima
-    context.user_data["ultima_data_registrata"] = dati["data"]
+        # Memorizziamo l'ultima data confermata per far avanzare automaticamente la prossima
+        context.user_data["ultima_data_registrata"] = dati["data"]
 
-    await query.edit_message_text(
-        f"Ottimo! L'audio per il giorno {dati['data']} è stato salvato"
-        " ufficialmente nell'archivio.\n\nDigita /registra quando vuoi"
-        " procedere con un'altra registrazione."
-    )
+        await query.edit_message_text(
+            f"Ottimo! L'audio per il giorno {dati['data']} è stato salvato"
+            " ufficialmente nell'archivio.\n\nDigita /registra quando vuoi"
+            " procedere con un'altra registrazione."
+        )
 
-  elif scelta == "rifai":
-    await query.edit_message_text(
-        "Registrazione scartata.\nNessun problema, digita /registra quando sei"
-        " pronto per riprovare."
-    )
+    elif scelta == "rifai":
+        await query.edit_message_text(
+            "Registrazione scartata.\nNessun problema, digita /registra quando sei"
+            " pronto per riprovare."
+        )
 
 
 if __name__ == "__main__":
-  application = ApplicationBuilder().token(TOKEN).build()
+    application = ApplicationBuilder().token(TOKEN).build()
 
-  application.add_handler(CommandHandler("start", start))
-  application.add_handler(CommandHandler("istruzioni", mostra_istruzioni))
-  application.add_handler(CommandHandler("registra", avvia_registrazione))
-  application.add_handler(
-      MessageHandler(
-          filters.AUDIO | filters.VOICE | filters.Document.AUDIO, ricevi_audio
-      )
-  )
-  application.add_handler(CallbackQueryHandler(gestisci_pulsanti))
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("idgruppo", mostra_id_gruppo))
+    application.add_handler(CommandHandler("istruzioni", mostra_istruzioni))
+    application.add_handler(CommandHandler("registra", avvia_registrazione))
 
-  print("Bot unificato avviato e in ascolto...")
-  application.run_polling()
+    application.add_handler(
+        MessageHandler(
+            filters.AUDIO | filters.VOICE | filters.Document.AUDIO,
+            ricevi_audio
+        )
+    )
+
+    application.add_handler(CallbackQueryHandler(gestisci_pulsanti))
+
+    print("Bot unificato avviato e in ascolto...")
+    application.run_polling()
