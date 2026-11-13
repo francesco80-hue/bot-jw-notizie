@@ -1,7 +1,10 @@
 
 from datetime import date, datetime, timedelta
+import hashlib
 import logging
 import os
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -15,6 +18,24 @@ from telegram.ext import (
 # --- CONFIGURAZIONE ---
 TOKEN = os.getenv("TOKEN")
 CANALE_ARCHIVIO_ID = -1004454006617
+
+
+def avvia_server_health():
+    class HealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == "/health":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"OK")
+            else:
+                self.send_response(404)
+
+        def log_message(self, format, *args):
+            pass
+
+    porta = int(os.environ.get("PORT", "10000"))
+    server = ThreadingHTTPServer(("0.0.0.0", porta), HealthHandler)
+    server.serve_forever()
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -202,6 +223,14 @@ async def gestisci_pulsanti(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == "__main__":
+    if not TOKEN:
+        raise RuntimeError("TOKEN Telegram non configurato")
+
+    impronta = hashlib.sha256(TOKEN.encode("utf-8")).hexdigest()
+    print(f"IMPRONTA_TOKEN_SHA256: {impronta}", flush=True)
+
+    Thread(target=avvia_server_health, daemon=True).start()
+
     application = ApplicationBuilder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
