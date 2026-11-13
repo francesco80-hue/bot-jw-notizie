@@ -29,6 +29,7 @@ def avvia_server_health():
                 self.wfile.write(b"OK")
             else:
                 self.send_response(404)
+                self.end_headers()
 
         def log_message(self, format, *args):
             pass
